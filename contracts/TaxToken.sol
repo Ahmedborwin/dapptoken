@@ -17,23 +17,27 @@ contract TaxToken is
     AccessControl,
     ReentrancyGuard
 {
+    //state fields
+
+    address frontEndAddress = 0x0000000000000000000000000000000000000000;
+
     //securtiy roles
     bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE"); //sets the governor role
     bytes32 public constant PRESIDENT_ROLE = keccak256("PRESIDENT_ROLE"); //sets the president role
     bytes32 public constant EXCLUDED_ROLE = keccak256("EXCLUDED_ROLE"); //sets the excluded role
 
     constructor(
-        address _taxDestination
+        address taxDestination
     ) ERC20("taxToken", "TT") ERC20Permit("taxToken") {
         //set roles
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(GOVERNOR_ROLE, msg.sender);
         _grantRole(PRESIDENT_ROLE, msg.sender);
         _grantRole(EXCLUDED_ROLE, msg.sender);
-        //tunr tax on, set tax % and tax destination
+        //tur tax on, set tax % and tax destination
         _taxon();
         _updatetax(500);
-        updateTaxDestination(_taxDestination);
+        updateTaxDestination(taxDestination);
         uint256 totalSupply = 1000000 ether;
         _mint(msg.sender, totalSupply);
     }
@@ -56,12 +60,12 @@ contract TaxToken is
     function _transfer(
         address from,
         address to,
-        uint256 amount // Overrides the _transfer() function to use an optional transfer tax.
+        uint256 amount // Overrides the _update() function to use an optional transfer tax.
     )
         internal
         virtual
         override(
-            ERC20 // Specifies only the ERC20 contract for the override.
+            ERC20 // Specifies ERC20 contract for the override.
         )
         nonReentrant // Prevents re-entrancy attacks.
     {
@@ -86,6 +90,14 @@ contract TaxToken is
             ); // Transfers tax to the tax destination address.
             super._transfer(from, to, (amount * (10000 - thetax())) / 10000); // Transfers the remainder to the recipient.
         }
+    }
+
+    //setup functions
+
+    function setFrontEndAddress(
+        address _frontEndAddress
+    ) external onlyRole(GOVERNOR_ROLE) {
+        frontEndAddress = _frontEndAddress;
     }
 
     // TAX ADMIN FUNCTIONS

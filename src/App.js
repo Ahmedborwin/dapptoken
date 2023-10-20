@@ -1,5 +1,10 @@
 import logo from "./logo.svg";
 import "./App.css";
+//import moralis
+
+//read my smart contract
+//read taxtoken
+//read vendor
 
 function App() {
   return (
