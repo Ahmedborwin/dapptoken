@@ -1,31 +1,28 @@
 const { ethers } = require("hardhat");
 const { expect } = require("chai");
 const { add } = require("lodash");
+const Deploy = require("../deploy/01-deploy");
 
 const tokens = (n) => {
   return ethers.utils.parseUnits(n.toString(), "ether");
 };
 
-describe("vendor Contract Tests", () => {
+async function triggerDeploy() {
+  try {
+    await Deploy();
+  } catch (error) {
+    console.error("Error during deployment:", error);
+  }
+}
+
+describe("vendor Contract Tests Deployscript", () => {
   let vendor, deployer, buyer, taxtoken, treasury;
   beforeEach("deploy test contract", async () => {
     [deployer, buyer, taxtoken, treasury] = await ethers.getSigners();
-
-    //deploy tax token
-    const taxtokenFactory = await ethers.getContractFactory("TaxToken");
-    taxtoken = await taxtokenFactory.deploy(treasury.address); //pass treasury address to constructor
-    await taxtoken.deployed(deployer.address);
-
-    //deploy vendor
-    const VendorFactory = await ethers.getContractFactory("Vendor");
-    vendor = await VendorFactory.deploy(taxtoken.address);
-    await vendor.deployed();
-
-    //fund vendor with ether
-    await deployer.sendTransaction({ to: vendor.address, value: tokens(10) });
-
-    // approve vendor to transfer tokens
-    await taxtoken.approve(vendor.address, tokens(500000));
+    //call deploy script for taxToken and vendor contract:
+    await triggerDeploy();
+    vendor = await ethers.getContractAt("Vendor", deployer.address);
+    taxtoken = await ethers.getContractAt("TaxToken", deployer.address);
   });
   it("Price of token in Eth", async () => {
     const tokenPrice = ethers.utils.formatEther(await vendor.getTokenPrice());

@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 
 let taxtoken, vendor;
 
-async function Deploy() {
+module.exports = async function Deploy() {
   const [deployer, player2, treasury] = await ethers.getSigners();
   //deploy tax token
   const taxtokenFactory = await ethers.getContractFactory("TaxToken");
@@ -10,7 +10,7 @@ async function Deploy() {
   await taxtoken.deployed(deployer.address);
 
   //deploy vendor
-  const VendorFactory = await ethers.getContractFactory("vendor");
+  const VendorFactory = await ethers.getContractFactory("Vendor");
   vendor = await VendorFactory.deploy(taxtoken.address);
   await vendor.deployed();
 
@@ -19,10 +19,6 @@ async function Deploy() {
 
   const tokenBalance = await taxtoken.balanceOf(vendor.address);
   console.log(`token Balance:- ${tokenBalance}`);
-}
+};
 
-Deploy().catch((error) => {
-  console.log(error);
-  process.exitCode = 1;
-});
-Deploy.tags = ["all"];
+//Deploy.tags = ["all"];
