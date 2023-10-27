@@ -33,6 +33,12 @@ describe("Taxable Token Tests", () => {
     await taxtoken.deployed();
   });
 
+  //sending tokens
+  //approving tokens
+  //delelgated transfer
+  //add events and test events
+  //add custom error and test them
+
   describe("check initial constructor set up is as expected", () => {
     it("Checks tokens minted to deployer address", async () => {
       const tokenBalance = await taxtoken.balanceOf(deployer);
@@ -46,26 +52,6 @@ describe("Taxable Token Tests", () => {
         ethers.utils.formatUnits(etherM, "ether")
       );
     });
-
-    //   it("checks default admin role is set", async () => {
-    //     //
-    //   });
-    //   it("checks governer role is set", async () => {
-    //     //
-    //   });
-    //   it("checks president role is set", async () => {
-    //     //
-    //   });
-    //   it("checks excluded role is set", async () => {
-    //     //
-    //   });
-    //   it("checks tax is set to ON", async () => {
-    //     // check that tax is on
-
-    //   });
-    //   it("checks tax amount is 5%", async () => {
-    //     //
-    //   });
   });
 
   describe("check tax admin functions access control are in place", () => {
@@ -140,7 +126,10 @@ describe("Taxable Token Tests", () => {
         ]
       );
       //read treasury
-      console.log(ethers.utils.formatEther(await taxtoken.balanceOf(treasury)));
+      console.log(
+        "Treasury Balance:",
+        ethers.utils.formatEther(await taxtoken.balanceOf(treasury), "\n")
+      );
     });
   });
 });

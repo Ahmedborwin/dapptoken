@@ -33,8 +33,8 @@ contract TaxToken is
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(GOVERNOR_ROLE, msg.sender);
         _grantRole(PRESIDENT_ROLE, msg.sender);
-        _grantRole(EXCLUDED_ROLE, msg.sender);
-        //tur tax on, set tax % and tax destination
+        //_grantRole(EXCLUDED_ROLE, msg.sender);
+        //turn tax on, set tax % and tax destination
         _taxon();
         _updatetax(500);
         updateTaxDestination(taxDestination);
@@ -74,6 +74,7 @@ contract TaxToken is
             hasRole(EXCLUDED_ROLE, to) ||
             !taxed()
         ) {
+            //////////////////////// // console.log("excluded from tax", msg.sender); ////////////////////////
             // If to/from a tax excluded address or if tax is off...
             super._transfer(from, to, amount); // Transfers 100% of amount to recipient.
         } else {
@@ -118,5 +119,11 @@ contract TaxToken is
         address newdestination
     ) public onlyRole(PRESIDENT_ROLE) {
         _updatetaxdestination(newdestination);
+    }
+
+    function getTreasuryAddress() external view returns (address) {
+        address _taxDestination = taxdestination();
+        console.log("TAXTOKEN TaxTreasuryCONTRACT:", _taxDestination);
+        return _taxDestination;
     }
 }

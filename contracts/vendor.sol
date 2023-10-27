@@ -6,27 +6,39 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "../contracts/TaxToken.sol"; // Make sure to import your TaxToken contract properly
 
 contract Vendor is Ownable {
-    TaxToken private taxToken;
-    uint256 constant tokenPerEth = 1000000; // 1 * 10 ** 6
+    event tokensBought(address buyer, uint256 tokenBought);
 
-    constructor(address _taxTokenAddress) Ownable(msg.sender) {
+    TaxToken private taxToken;
+    uint256 public constant tokenPerEth = 0.025 ether; // 1 * 10 ** 21
+
+    address internal taxableTokenOwner;
+
+    constructor(
+        address _taxTokenAddress,
+        address _taxableTokenOwner
+    ) Ownable(msg.sender) {
         taxToken = TaxToken(_taxTokenAddress);
+        taxableTokenOwner = _taxableTokenOwner;
     }
 
     // Buy function
-    function buyTokens() external payable {
-        uint256 tokensToBuy = msg.value * tokenPerEth;
+    function buyTokens() public payable {
+        uint256 tokensToBuy = (msg.value / tokenPerEth) * 1e18;
 
         // Transfer tokens to the buyer
         require(
-            taxToken.transferFrom(owner(), msg.sender, tokensToBuy),
+            taxToken.transferFrom(taxableTokenOwner, msg.sender, tokensToBuy),
             "Token transfer failed"
         );
+
+        emit tokensBought(msg.sender, tokensToBuy);
     }
 
     // Sell function
     function sellTokens(uint256 tokenAmount) external {
-        uint256 ethForTokensSold = tokenAmount / tokenPerEth;
+        uint256 ethForTokensSold = (tokenAmount * tokenPerEth) / 1e18;
+
+        //////////////////////// console.log("VENDOR: Eth for tokens sold:", ethForTokensSold);
 
         // Check if the contract has enough Ether to buy back the tokens
         require(
@@ -42,7 +54,7 @@ contract Vendor is Ownable {
 
         // Transfer tokens from the seller to this contract
         require(
-            taxToken.transferFrom(msg.sender, address(this), tokenAmount),
+            taxToken.transferFrom(msg.sender, owner(), tokenAmount),
             "Token transfer failed"
         );
 
@@ -54,7 +66,7 @@ contract Vendor is Ownable {
     // Owner can deposit tokens into the contract
     function depositTokens(uint256 tokenAmount) external onlyOwner {
         require(
-            taxToken.transferFrom(msg.sender, address(this), tokenAmount),
+            taxToken.transferFrom(msg.sender, taxableTokenOwner, tokenAmount),
             "Token transfer failed"
         );
     }
@@ -72,5 +84,11 @@ contract Vendor is Ownable {
         return tokenPerEth;
     }
 
-    receive() external payable {}
+    receive() external payable {
+        buyTokens();
+    }
+
+    fallback() external payable {
+        console.log("<<<<<<<<<<YOU HIT THE FALL BACK>>>>>>>>>");
+    }
 }

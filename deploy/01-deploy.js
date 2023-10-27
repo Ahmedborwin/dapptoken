@@ -2,8 +2,9 @@ const { ethers } = require("hardhat");
 
 let taxtoken, vendor;
 
-module.exports = async function Deploy() {
-  const [deployer, player2, treasury] = await ethers.getSigners();
+async function Deploy() {
+  const [deployer, treasury, user1] = await ethers.getSigners();
+
   //deploy tax token
   const taxtokenFactory = await ethers.getContractFactory("TaxToken");
   taxtoken = await taxtokenFactory.deploy(treasury.address); //pass treasury address to constructor
@@ -11,14 +12,22 @@ module.exports = async function Deploy() {
 
   //deploy vendor
   const VendorFactory = await ethers.getContractFactory("Vendor");
-  vendor = await VendorFactory.deploy(taxtoken.address);
+  vendor = await VendorFactory.deploy(taxtoken.address, deployer.address);
   await vendor.deployed();
 
-  await taxtoken.transfer(vendor.address, ethers.utils.parseEther("1000")); //transfer token to vendor
-  //await vendor.setFrontEndAddress(); //set front end address - not sure what this is for yet
+  const totalSupply = await taxtoken.totalSupply();
 
-  const tokenBalance = await taxtoken.balanceOf(vendor.address);
-  console.log(`token Balance:- ${tokenBalance}`);
-};
+  await taxtoken.approve(vendor.address, totalSupply.toString()); //transfer token to vendor
+
+  const tokenAllowance = ethers.utils.formatEther(
+    await taxtoken.allowance(deployer.address, vendor.address)
+  );
+
+  console.log(`token allowance:- ${tokenAllowance}`);
+}
 
 //Deploy.tags = ["all"];
+Deploy().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
