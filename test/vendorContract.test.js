@@ -52,6 +52,11 @@ describe("Vendor", () => {
       const totalBalance = add(balanceBuyer, balanceTreasury).toString();
       expect(totalBalance).equal(tokens(40).toString());
     });
+    it("buyTokens updates tokens bought variables", async () => {
+      await vendor.connect(buyer).buyTokens({ value: tokens(1) });
+      const tokensBought = await vendor.getTokensSold();
+      expect(tokensBought).equal(tokens(40).toString());
+    });
 
     it("buy tokens event emitted", async () => {
       expect(await vendor.connect(buyer).buyTokens({ value: tokens(1) }))

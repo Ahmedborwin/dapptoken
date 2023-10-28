@@ -7,6 +7,7 @@ import Navbar from "./components/navbar";
 import Information from "./components/Info";
 import Buy from "./components/Buy";
 import Loading from "./components/Loading";
+import Progress from "./components/Progress";
 //Artifacts
 import CROWDSALE_ABI from "./constants/abis/Crowdsale.json";
 import TOKEN_ABI from "./constants/abis/Token.json";
@@ -115,15 +116,18 @@ function App() {
             setIsLoading={setIsLoading}
             accounts={accounts}
           />
-          {account && (
-            <Information
-              account={account}
-              accountBalance={accountBalance}
-              treasury={treasury}
-              treasuryBalance={treasuryBalance}
-            />
-          )}
         </>
+      )}
+
+      <hr />
+
+      {account && (
+        <Information
+          account={account}
+          accountBalance={accountBalance}
+          treasury={treasury}
+          treasuryBalance={treasuryBalance}
+        />
       )}
     </Container>
   );

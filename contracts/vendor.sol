@@ -9,8 +9,9 @@ contract Vendor is Ownable {
     event tokensBought(address buyer, uint256 tokenBought);
 
     TaxToken private taxToken;
-    uint256 public constant tokenPerEth = 0.025 ether; // 1 * 10 ** 21
 
+    uint256 public constant tokenPerEth = 0.025 ether; // 1 * 10 ** 21
+    uint256 internal tokensSold;
     address internal taxableTokenOwner;
 
     constructor(
@@ -30,6 +31,8 @@ contract Vendor is Ownable {
             taxToken.transferFrom(taxableTokenOwner, msg.sender, tokensToBuy),
             "Token transfer failed"
         );
+
+        tokensSold += tokensToBuy;
 
         emit tokensBought(msg.sender, tokensToBuy);
     }
@@ -82,6 +85,10 @@ contract Vendor is Ownable {
     // Get token price
     function getTokenPrice() external pure returns (uint256) {
         return tokenPerEth;
+    }
+
+    function getTokensSold() external view returns (uint256) {
+        return tokensSold;
     }
 
     receive() external payable {

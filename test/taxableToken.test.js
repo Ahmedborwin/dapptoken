@@ -39,7 +39,7 @@ describe("Taxable Token Tests", () => {
   //add events and test events
   //add custom error and test them
 
-  describe("check initial constructor set up is as expected", () => {
+  describe("Deployment Token", () => {
     it("Checks tokens minted to deployer address", async () => {
       const tokenBalance = await taxtoken.balanceOf(deployer);
       const tokenBalanceString = tokenBalance.toString();
@@ -51,6 +51,10 @@ describe("Taxable Token Tests", () => {
       expect(ethers.utils.formatEther(tokenBalanceString)).equal(
         ethers.utils.formatUnits(etherM, "ether")
       );
+    });
+    it("checks totalSupply of tokens", async () => {
+      const totalSupply = await taxtoken.getTotalSupply();
+      expect(totalSupply).equal(tokens(1000000).toString());
     });
   });
 

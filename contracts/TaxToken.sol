@@ -123,7 +123,10 @@ contract TaxToken is
 
     function getTreasuryAddress() external view returns (address) {
         address _taxDestination = taxdestination();
-        console.log("TAXTOKEN TaxTreasuryCONTRACT:", _taxDestination);
         return _taxDestination;
+    }
+
+    function getTotalSupply() external view returns (uint256) {
+        return totalSupply();
     }
 }
