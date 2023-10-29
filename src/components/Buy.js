@@ -18,9 +18,7 @@ const Buy = ({ provider, token, crowdsale, price, setIsLoading, accounts }) => {
     setIsWaiting(true);
 
     try {
-      const signer = await provider.getSigner(2);
-
-      // const signer = await provider.getSigner();
+      const signer = await provider.getSigner();
 
       // We need to calculate the required ETH in order to buy the tokens...
       const value = ethers.utils.parseUnits(amount.toString(), "ether");

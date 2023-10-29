@@ -1,6 +1,7 @@
 const Information = ({
   account,
   accountBalance,
+  etherBalance,
   treasury,
   treasuryBalance,
 }) => {
@@ -13,6 +14,10 @@ const Information = ({
       <p>
         <strong>Tokens Owned:</strong> {accountBalance}
       </p>
+      <p>
+        <strong>Ether Owned: {etherBalance}</strong>
+      </p>
+
       <p>
         <strong>Treasury:</strong> {treasury}
       </p>

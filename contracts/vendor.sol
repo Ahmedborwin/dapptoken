@@ -10,7 +10,8 @@ contract Vendor is Ownable {
 
     TaxToken private taxToken;
 
-    uint256 public constant tokenPerEth = 0.025 ether; // 1 * 10 ** 21
+    uint256 public constant tokenPerEth = 0.025 ether;
+    uint256 internal crowdsaleDeadline;
     uint256 internal tokensSold;
     address internal taxableTokenOwner;
 
@@ -20,6 +21,7 @@ contract Vendor is Ownable {
     ) Ownable(msg.sender) {
         taxToken = TaxToken(_taxTokenAddress);
         taxableTokenOwner = _taxableTokenOwner;
+        //crowdsaleDeadline = block.timestamp + 604800;
     }
 
     // Buy function
@@ -37,11 +39,41 @@ contract Vendor is Ownable {
         emit tokensBought(msg.sender, tokensToBuy);
     }
 
-    // Sell function
-    function sellTokens(uint256 tokenAmount) external {
+    function refundTokens() external {
+        uint256 tokenAmount = taxToken.balanceOf(msg.sender); //get total tokens owned by caller
+
+        //calculate ethers owed to token seller
         uint256 ethForTokensSold = (tokenAmount * tokenPerEth) / 1e18;
 
-        //////////////////////// console.log("VENDOR: Eth for tokens sold:", ethForTokensSold);
+        require(block.timestamp >= crowdsaleDeadline, "Crowdsale is Ongoing");
+
+        // Check if the contract has enough Ether to buy back the tokens
+        require(
+            address(this).balance >= ethForTokensSold,
+            "Not enough Ether in contract"
+        );
+
+        taxToken.disableTax(); //disable tax for refund transaction
+
+        // Transfer tokens from the seller to owner contract
+        require(
+            taxToken.transferFrom(msg.sender, owner(), tokenAmount),
+            "Token transfer failed"
+        );
+
+        // Transfer Ether to the seller
+        (bool sent, ) = payable(msg.sender).call{value: ethForTokensSold}("");
+        require(sent, "Transaction Failed");
+
+        tokensSold -= tokenAmount;
+    }
+
+    // Sell function
+    function sellTokens(uint256 tokenAmount) external {
+        //calculate ethers owed to token seller
+        uint256 ethForTokensSold = (tokenAmount * tokenPerEth) / 1e18;
+
+        require(block.timestamp >= crowdsaleDeadline, "Crowdsale is Ongoing");
 
         // Check if the contract has enough Ether to buy back the tokens
         require(
@@ -55,7 +87,7 @@ contract Vendor is Ownable {
             "Not enough tokens to sell"
         );
 
-        // Transfer tokens from the seller to this contract
+        // Transfer tokens from the seller to owner contract
         require(
             taxToken.transferFrom(msg.sender, owner(), tokenAmount),
             "Token transfer failed"
@@ -64,6 +96,8 @@ contract Vendor is Ownable {
         // Transfer Ether to the seller
         (bool sent, ) = payable(msg.sender).call{value: ethForTokensSold}("");
         require(sent, "Transaction Failed");
+
+        tokensSold -= tokenAmount;
     }
 
     // Owner can deposit tokens into the contract

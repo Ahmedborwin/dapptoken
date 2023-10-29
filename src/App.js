@@ -8,6 +8,8 @@ import Information from "./components/Info";
 import Buy from "./components/Buy";
 import Loading from "./components/Loading";
 import Progress from "./components/Progress";
+import Sell from "./components/Sell";
+
 //Artifacts
 import CROWDSALE_ABI from "./constants/abis/Crowdsale.json";
 import TOKEN_ABI from "./constants/abis/Token.json";
@@ -18,9 +20,12 @@ function App() {
   const [accounts, setAccounts] = useState(null);
 
   const [account, setAccount] = useState(null);
+
   const [treasury, setTreasury] = useState(false);
-  const [accountBalance, setAccountBalance] = useState(null);
   const [treasuryBalance, setTreasuryBalance] = useState(null);
+
+  const [accountBalance, setAccountBalance] = useState(null);
+  const [accountEthBalance, setAccountEthBalance] = useState(null);
 
   const [price, setPrice] = useState(null);
 
@@ -68,7 +73,6 @@ function App() {
     //fetch total token Supply
     const tokenSupply = await token.getTotalSupply();
     setMaxSupply(tokenSupply);
-    console.log(maxSupply);
 
     //fetch tokensBought
     const tokensBoughtFetch = await crowdsale.getTokensSold();
@@ -83,26 +87,32 @@ function App() {
       await token.balanceOf(account),
       18
     );
-    console.log(accountBalance.toString());
 
     setAccountBalance(accountBalance);
 
+    //Fetch account Ether balance
+
+    const etherBalance = await provider.getBalance(account);
+
+    setAccountEthBalance(ethers.utils.formatEther(etherBalance.toString()));
+
     // Fetch Treasury address and token balance
 
-    const treasuryAcc = await token.getTreasuryAddress();
-    setTreasury(treasuryAcc);
+    const treasuryAcc =  token.getTreasuryAddress();
 
-    await new Promise(async (resolve) => {
-      if (treasury) {
-        const treasuryTokenBalance = ethers.utils.formatUnits(
-          await token.balanceOf(treasury),
-          18
-        );
-        setTreasuryBalance(treasuryTokenBalance);
-        resolve();
-      }
-    });
-    console.log("");
+    await new Promise(async (resolve) => { 
+      setTreasury(treasuryAcc);
+      const treasuryTokenBalance = ethers.utils.formatUnits(
+        await token.balanceOf(treasury),
+        18
+      );
+      setTreasuryBalance(treasuryTokenBalance);
+
+    }
+    
+    
+
+    console.log("10");
 
     setIsLoading(false);
   };
@@ -117,7 +127,6 @@ function App() {
     <Container>
       <Navbar />
       <h1 className="my-4 text-center">
-        {" "}
         <strong>Token Vending Machine</strong>
       </h1>
       {isLoading ? (
@@ -136,6 +145,14 @@ function App() {
             setIsLoading={setIsLoading}
             accounts={accounts}
           />
+          {accountBalance > 0 && (
+            <Sell
+              provider={provider}
+              token={token}
+              crowdsale={crowdsale}
+              setIsLoading={setIsLoading}
+            />
+          )}
           <Progress
             maxTokens={maxSupply.toString()}
             tokenSold={tokensBought.toString()}
@@ -149,6 +166,7 @@ function App() {
         <Information
           account={account}
           accountBalance={accountBalance}
+          etherBalance={accountEthBalance}
           treasury={treasury}
           treasuryBalance={treasuryBalance}
         />
