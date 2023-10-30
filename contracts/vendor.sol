@@ -21,7 +21,7 @@ contract Vendor is Ownable {
     ) Ownable(msg.sender) {
         taxToken = TaxToken(_taxTokenAddress);
         taxableTokenOwner = _taxableTokenOwner;
-        //crowdsaleDeadline = block.timestamp + 604800;
+        crowdsaleDeadline = block.timestamp + 604800;
     }
 
     // Buy function
@@ -40,6 +40,8 @@ contract Vendor is Ownable {
     }
 
     function refundTokens() external {
+        require(block.timestamp >= crowdsaleDeadline, "Crowdsale is Ongoing");
+
         uint256 tokenAmount = taxToken.balanceOf(msg.sender); //get total tokens owned by caller
 
         //calculate ethers owed to token seller
@@ -53,7 +55,7 @@ contract Vendor is Ownable {
             "Not enough Ether in contract"
         );
 
-        taxToken.disableTax(); //disable tax for refund transaction
+        //taxToken.disableTax(); //disable tax for refund transaction
 
         // Transfer tokens from the seller to owner contract
         require(
@@ -72,8 +74,6 @@ contract Vendor is Ownable {
     function sellTokens(uint256 tokenAmount) external {
         //calculate ethers owed to token seller
         uint256 ethForTokensSold = (tokenAmount * tokenPerEth) / 1e18;
-
-        require(block.timestamp >= crowdsaleDeadline, "Crowdsale is Ongoing");
 
         // Check if the contract has enough Ether to buy back the tokens
         require(
@@ -114,6 +114,19 @@ contract Vendor is Ownable {
             ""
         );
         require(sent, "Transaction failed!");
+    }
+
+    function crowdsaleThresholdPassed() internal returns (bool) {
+        //get total supply
+        uint256 totalTokens = taxToken.getTotalSupply();
+        uint256 tokenSoldAsBasis = (((tokensSold / totalTokens) * 7500) /
+            10000);
+        console.log("token solds as Basis points: ", tokenSoldAsBasis);
+        if (tokenSoldAsBasis > 7500) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // Get token price
