@@ -98,21 +98,14 @@ function App() {
 
     // Fetch Treasury address and token balance
 
-    const treasuryAcc =  token.getTreasuryAddress();
+    const treasuryAcc = await token.getTreasuryAddress();
+    setTreasury(treasuryAcc);
 
-    await new Promise(async (resolve) => { 
-      setTreasury(treasuryAcc);
-      const treasuryTokenBalance = ethers.utils.formatUnits(
-        await token.balanceOf(treasury),
-        18
-      );
-      setTreasuryBalance(treasuryTokenBalance);
-
-    }
-    
-    
-
-    console.log("10");
+    const treasuryTokenBalance = ethers.utils.formatUnits(
+      await token.balanceOf(treasuryAcc),
+      18
+    );
+    setTreasuryBalance(treasuryTokenBalance);
 
     setIsLoading(false);
   };
