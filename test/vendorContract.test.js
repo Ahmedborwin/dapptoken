@@ -125,19 +125,32 @@ describe("Vendor", () => {
     });
     it("fails in 7 days not elapsed", async () => {
       const tokenBalanceBuyer = await taxtoken.balanceOf(buyer.address);
-      expect(await vendor.connect(buyer).refundTokens()).revertedWith(
+      await expect(vendor.connect(buyer).refundTokens()).revertedWith(
         "Crowdsale is Ongoing"
       ); //buyer sells tokens
-      await ethers.sendTransaction({});
     });
     it("Allows buyer to refund all tokens", async () => {
       await ethers.provider.send("evm_increaseTime", [604800]);
       await ethers.provider.send("evm_mine");
+      //turn off tax
+      await taxtoken.disableTax();
+      const tokenBalanceBuyer = await taxtoken.balanceOf(buyer.address);
+      await vendor.connect(buyer).refundTokens(); //buyer sells tokens
+      //check token balance of vendor contract
+      expect((await taxtoken.balanceOf(buyer.address)).toString()).equal(
+        (0).toString()
+      );
+    });
+    it("Allows buyer to refund all tokens without oaying tax on refund transaction", async () => {
+      await ethers.provider.send("evm_increaseTime", [604800]);
+      await ethers.provider.send("evm_mine");
+      //turn off tax
+      await taxtoken.disableTax();
       const tokenBalanceBuyer = await taxtoken.balanceOf(buyer.address);
       await vendor.connect(buyer).refundTokens(); //buyer sells tokens
       //check token balance of vendor contract
       expect((await taxtoken.balanceOf(treasury.address)).toString()).equal(
-        tokens(39)
+        (tokens(10) * 40 * 0.05).toString()
       );
     });
   });

@@ -47,8 +47,6 @@ contract Vendor is Ownable {
         //calculate ethers owed to token seller
         uint256 ethForTokensSold = (tokenAmount * tokenPerEth) / 1e18;
 
-        require(block.timestamp >= crowdsaleDeadline, "Crowdsale is Ongoing");
-
         // Check if the contract has enough Ether to buy back the tokens
         require(
             address(this).balance >= ethForTokensSold,
@@ -72,6 +70,9 @@ contract Vendor is Ownable {
 
     // Sell function
     function sellTokens(uint256 tokenAmount) external {
+        //min 5% of tokens to be bought
+        require(crowdsaleThresholdPassed(), "Minimum Tokens not bought");
+
         //calculate ethers owed to token seller
         uint256 ethForTokensSold = (tokenAmount * tokenPerEth) / 1e18;
 
